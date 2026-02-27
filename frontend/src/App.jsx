@@ -34,7 +34,7 @@ export default function App() {
       const form = new FormData();
       form.append("file", file);
 
-      const res = await axios.post(`${API_BASE}/ingest/pdf`, form, {
+      const res = await axios.post("/api/ingest/pdf", form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -64,7 +64,7 @@ export default function App() {
       setMessages((m) => [...m, { role: "user", text: q }]);
       setQuestion("");
 
-      const res = await axios.post(`${API_BASE}/ask`, {
+      const res = await axios.post("/api/ask", {
         question: q,
         top_k: 5,
       });
