@@ -82,7 +82,7 @@ export default function App() {
     <div className="page">
       <header className="header">
         <div>
-          <h1>OpenAI RAG Starter</h1>
+          <h1 className="brandTitle">OpenAI RAG Starter</h1>
           <p className="sub">
             Upload a PDF → ask questions → get grounded answers with sources.
           </p>
@@ -100,7 +100,7 @@ export default function App() {
               accept="application/pdf"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
-            <button type="submit" disabled={!file || ingesting}>
+            <button className="btn btnPrimary" type="submit" disabled={!file || ingesting}>
               {ingesting ? "Ingesting..." : "Ingest"}
             </button>
           </form>
@@ -123,7 +123,7 @@ export default function App() {
               onChange={(e) => setQuestion(e.target.value)}
               disabled={asking}
             />
-            <button type="submit" disabled={asking || !question.trim() || !canAsk}>
+            <button className="btn btnGreen" type="submit" disabled={asking || !question.trim() || !canAsk}>
               {asking ? "Asking..." : "Ask"}
             </button>
           </form>
@@ -138,7 +138,7 @@ export default function App() {
               </div>
             ) : (
               messages.map((m, i) => (
-                <div key={i} className={`msg ${m.role}`}>
+                <div key={i} className={`msg ${m.role}`} style={{ "--i": i }}>
                   <div className="role">{m.role}</div>
                   <div className="bubble">{m.text}</div>
                 </div>
@@ -157,7 +157,7 @@ export default function App() {
           ) : (
             <div className="sources">
               {sources.map((s, i) => (
-                <div key={i} className="sourceCard">
+                <div key={i} className="sourceCard" style={{ "--i": i }}>
                   <div className="sourceMeta">
                     <span className="badge">{s.source_name}</span>
                     <span className="badge">chunk {s.chunk_id}</span>
