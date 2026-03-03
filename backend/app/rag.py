@@ -12,7 +12,6 @@ Cite sources by chunk_id and source_name when relevant.
 """
 
 def build_context(results: List[tuple]) -> str:
-    # results: [(score, meta), ...]
     blocks = []
     for score, meta in results:
         blocks.append(
@@ -33,26 +32,23 @@ def answer_question(
 
     context = build_context(retrieved)
 
-    prompt = f"""Context:
+    user_prompt = f"""Context:
 {context}
 
 Question:
 {question}
 """
 
-    resp = client.responses.create(
+    # ✅ Use Chat Completions (more broadly supported)
+    resp = client.chat.completions.create(
         model=model,
-        input=[
+        messages=[
             {"role": "system", "content": SYSTEM_INSTRUCTIONS},
-            {"role": "user", "content": prompt},
+            {"role": "user", "content": user_prompt},
         ],
+        temperature=0.2,
     )
 
-    # SDK returns structured output; simplest: resp.output_text
-    answer = getattr(resp, "output_text", None)
-    if answer is None:
-        # fallback: try to reconstruct if SDK changes
-        answer = str(resp)
-
+    answer = resp.choices[0].message.content or ""
     sources = [meta for _, meta in retrieved]
     return {"answer": answer, "sources": sources}
