@@ -26,9 +26,10 @@ def answer_question(
     embed_model: str,
     question: str,
     top_k: int = 5,
+    doc_id: str = None,
 ) -> Dict[str, Any]:
     q_vec = embed_texts(client, embed_model, [question])
-    retrieved = store.search(q_vec[0], top_k=top_k)
+    retrieved = store.search(q_vec[0], top_k=top_k, doc_id=doc_id)
 
     context = build_context(retrieved)
 
@@ -39,7 +40,6 @@ Question:
 {question}
 """
 
-    # ✅ Use Chat Completions (more broadly supported)
     resp = client.chat.completions.create(
         model=model,
         messages=[

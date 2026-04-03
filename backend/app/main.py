@@ -24,7 +24,6 @@ app = FastAPI(title="OpenAI RAG Starter")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# We need embedding dimension for FAISS. We can lazily init by embedding a tiny string once.
 _dim_cache = None
 _store = None
 
@@ -44,7 +43,6 @@ def get_store() -> VectorStore:
     if _store is not None:
         return _store
 
-    # get embedding dimension by a tiny request
     e = client.embeddings.create(model=OPENAI_EMBED_MODEL, input=["dim_check"])
     dim = len(e.data[0].embedding)
 
@@ -63,7 +61,6 @@ async def ingest_pdf_endpoint(file: UploadFile = File(...)):
 
     store = get_store()
 
-    # save upload to temp file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         content = await file.read()
         tmp.write(content)
@@ -95,6 +92,7 @@ def ask(req: AskRequest):
         embed_model=OPENAI_EMBED_MODEL,
         question=req.question,
         top_k=req.top_k,
+        doc_id=req.doc_id,
     )
 
     sources = [SourceChunk(**s) for s in out["sources"]]

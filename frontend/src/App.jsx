@@ -15,7 +15,7 @@ export default function App() {
   const [messages, setMessages] = useState([]); // {role: "user"|"assistant", text}
   const [sources, setSources] = useState([]);   // from API
 
-  const canAsk = useMemo(() => messages.length > 0 || docStatus?.chunks_added > 0, [messages, docStatus]);
+  const canAsk = useMemo(() => !!docStatus?.doc_id, [docStatus]);
 
   async function handleIngest(e) {
     e.preventDefault();
@@ -30,6 +30,7 @@ export default function App() {
       setIngesting(true);
       setDocStatus(null);
       setSources([]);
+      setMessages([]);
 
       const form = new FormData();
       form.append("file", file);
@@ -39,15 +40,16 @@ export default function App() {
       });
 
       setDocStatus(res.data);
-      setMessages((m) => [
-        ...m,
+      setMessages([
         { role: "assistant", text: `✅ Ingested: ${file.name} (${res.data.chunks_added} chunks)` },
       ]);
-    } catch (err) {
-      setError(err?.response?.data?.detail || err.message || "Failed to ingest PDF.");
-    } finally {
-      setIngesting(false);
-    }
+      } catch (err) {
+        if (err?.response?.status === 413) {
+          setError("📄 Document too large. Please upload a smaller PDF.");
+        } else {
+          setError(err?.response?.data?.detail || err.message || "Failed to ingest PDF.");
+        }
+      }
   }
 
   async function handleAsk(e) {
@@ -56,6 +58,11 @@ export default function App() {
 
     const q = question.trim();
     if (!q) return;
+
+    if (!docStatus?.doc_id) {
+      setError("Please ingest a PDF first.");
+      return;
+    }
 
     try {
       setAsking(true);
@@ -66,6 +73,7 @@ export default function App() {
 
       const res = await axios.post("/api/ask", {
         question: q,
+        doc_id: docStatus.doc_id,
         top_k: 5,
       });
 
@@ -86,6 +94,14 @@ export default function App() {
           <p className="sub">
             Upload a PDF → ask questions → get grounded answers with sources.
           </p>
+          <a
+            href="https://github.com/alexish4/OpenAI-RAG-Starter"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="githubLink"
+          >
+            🔗 View on GitHub
+          </a>
         </div>
         <div className="pill">API: {API_BASE}</div>
       </header>

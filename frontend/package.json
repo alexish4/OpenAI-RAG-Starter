@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && sudo rm -rf /var/www/rag/* && sudo cp -r ~/OpenAI-RAG-Starter/frontend/dist/* /var/www/rag/ && sudo systemctl reload nginx",
     "lint": "eslint .",
     "preview": "vite preview"
   },

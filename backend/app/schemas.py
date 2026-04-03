@@ -7,6 +7,7 @@ class IngestResponse(BaseModel):
 
 class AskRequest(BaseModel):
     question: str = Field(..., min_length=1)
+    doc_id: str = Field(..., min_length=1)
     top_k: int = 5
 
 class SourceChunk(BaseModel):

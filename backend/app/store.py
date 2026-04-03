@@ -62,21 +62,43 @@ class VectorStore:
         self.meta.extend(metas)
         self._persist()
 
-    def search(self, query_vec: np.ndarray, top_k: int = 5) -> List[Tuple[float, Dict[str, Any]]]:
+    def search(
+        self,
+        query_vec: np.ndarray,
+        top_k: int = 5,
+        doc_id: str = None,
+        fetch_k: int = 50,
+    ) -> List[Tuple[float, Dict[str, Any]]]:
         """
-        Returns list of (score, meta)
+        Returns list of (score, meta).
+        If doc_id is provided, only returns chunks from that document.
         """
+        if self.index.ntotal == 0:
+            return []
+
         if query_vec.dtype != np.float32:
             query_vec = query_vec.astype(np.float32)
         if query_vec.ndim == 1:
             query_vec = query_vec.reshape(1, -1)
 
-        scores, idxs = self.index.search(query_vec, top_k)
+        k = min(fetch_k, self.index.ntotal)
+        scores, idxs = self.index.search(query_vec, k)
+
         results = []
         for score, idx in zip(scores[0], idxs[0]):
             if idx == -1:
                 continue
-            results.append((float(score), self.meta[idx]))
+
+            meta = self.meta[idx]
+
+            if doc_id is not None and meta.get("doc_id") != doc_id:
+                continue
+
+            results.append((float(score), meta))
+
+            if len(results) >= top_k:
+                break
+
         return results
 
 def new_doc_id() -> str:
